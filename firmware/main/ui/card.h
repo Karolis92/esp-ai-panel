@@ -24,6 +24,8 @@ typedef struct {
     bool has;
     int mascot_x;
     int mascot_y;
+    bool anim_restart;  // scene changed: card_animate() re-bases anim_t0 on its next tick
+    uint32_t anim_t0;   // tick when the current scene started
 } card_t;
 
 void card_create(card_t *c, lv_obj_t *parent, int x, int y);

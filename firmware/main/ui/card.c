@@ -17,6 +17,9 @@
 #define NOTEPAD_X (INNER_W - 50)
 #define NOTEPAD_Y (GROUND_Y - 40)
 #define STATUS_MAX_W (INNER_W - 14 - 15) // status row minus dot + gap, with side margin
+#define DONE_CHECK_X (INNER_W - 32)
+#define DONE_CHECK_Y 6
+#define DONE_PARTY_TICKS 40 // ~6 s of full celebration at ANIM_PERIOD_MS=150, then a calmer loop
 #define SCROLL_SPEED lv_anim_speed_clamped(15, 1000, 10000) // px/s for overflowing labels (LVGL default 40)
 
 static void no_click(lv_obj_t *o)
@@ -175,7 +178,8 @@ static void layout_scene(card_t *c, const session_t *s)
         place(c->deco, SPR_ALERT, INNER_W - 26, 2);
         break;
     case ANIM_DONE:
-        place(c->deco, SPR_CHECK, INNER_W - 32, 6);
+        place(c->deco, SPR_CHECK, DONE_CHECK_X, DONE_CHECK_Y);
+        place(c->prop, SPR_SPARKLE_A, 6, 2); // twinkles around; repositioned in card_animate()
         break;
     case ANIM_ERROR:
         place(c->deco, SPR_CROSS, INNER_W - 26, 6);
@@ -234,6 +238,7 @@ void card_set(card_t *c, const session_t *s)
     }
     if (scene_changed) {
         layout_scene(c, s);
+        c->anim_restart = true;
     }
     lv_label_set_text(c->title, s->title);
 
@@ -241,8 +246,10 @@ void card_set(card_t *c, const session_t *s)
         const bool needs = s->state == CARD_NEEDS;
         show(c->pill, needs);
         show(c->status_row, !needs);
-        c->frame.border = needs ? COL_YELLOW : COL_ORANGE;
-        c->frame.glow_opa = needs ? LV_OPA_70 : 0;
+        const bool done = s->state == CARD_DONE;
+        c->frame.border = needs ? COL_YELLOW : done ? COL_GREEN : COL_ORANGE;
+        c->frame.glow = done ? COL_GREEN : COL_GLOW;
+        c->frame.glow_opa = needs ? LV_OPA_70 : done ? LV_OPA_60 : 0;
         pixframe_refresh(c->root);
         lv_color_t dot = COL_GREEN;
         if (s->state == CARD_IDLE) dot = COL_IDLE_DOT;
@@ -260,6 +267,11 @@ void card_animate(card_t *c, uint32_t tick)
     if (!c->has) {
         return;
     }
+    if (c->anim_restart) {
+        c->anim_restart = false;
+        c->anim_t0 = tick;
+    }
+    const uint32_t t = tick - c->anim_t0; // ticks since the scene started
     int dx = 0, dy = 0;
     switch (c->cur.anim) {
     case ANIM_LAPTOP:
@@ -297,6 +309,36 @@ void card_animate(card_t *c, uint32_t tick)
         // shake in bursts
         if ((tick % 12) < 4) dx = (tick % 2) ? 4 : -4;
         break;
+    case ANIM_DONE: {
+        // Celebrate: hop, bouncing check, twinkling sparkles. Full party at first, then a hop
+        // pair every ~3 s so a finished card still catches the eye until it falls back to idle.
+        static const int8_t hop[] = {0, -6, -10, -12, -10, -6, 0, 0};
+        const bool party = t < DONE_PARTY_TICKS;
+        const uint32_t cyc = party ? t : (t - DONE_PARTY_TICKS) % 20;
+        if (party || cyc < 16) {
+            dy = hop[cyc % 8];
+            lv_image_set_src(c->mascot, sprite(dy ? SPR_MASCOT_STEP : SPR_MASCOT));
+        } else {
+            lv_image_set_src(c->mascot, sprite(SPR_MASCOT));
+        }
+        lv_obj_set_y(c->deco, DONE_CHECK_Y - ((t / 2) % 2 ? 4 : 0));
+        // sparkle hops between spots around the mascot: big, small, gone
+        static const int16_t spots[][2] = {{4, 2}, {INNER_W - 28, 34}, {8, 36}, {84, 0}};
+        const uint32_t ph = t % 3;
+        if (ph == 2 && !party) {
+            show(c->prop, false);
+        } else {
+            const int16_t *p = spots[(t / 3) % 4];
+            place(c->prop, ph == 0 ? SPR_SPARKLE_A : SPR_SPARKLE_B, p[0], p[1]);
+        }
+        // Glow breathes slower and softer than the needs-you pulse, so needs-you stays the
+        // loudest card on the panel.
+        if (t % 4 == 0) {
+            c->frame.glow_opa = (t / 4) % 2 ? LV_OPA_60 : LV_OPA_20;
+            pixframe_refresh(c->root);
+        }
+        break;
+    }
     case ANIM_SLEEP:
         lv_obj_set_y(c->zzz, 2 - (int)((tick / 5) % 3) * 2);
         break;

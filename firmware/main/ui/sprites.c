@@ -216,6 +216,24 @@ DEF(d_cross, 3,
     ".rr.rr.",
     "rr...rr");
 
+DEF(d_sparkle_a, 3,
+    "...w...",
+    "...Y...",
+    "...Y...",
+    "wYYwYYw",
+    "...Y...",
+    "...Y...",
+    "...w...");
+
+DEF(d_sparkle_b, 3,
+    ".......",
+    ".......",
+    "...Y...",
+    "..YwY..",
+    "...Y...",
+    ".......",
+    ".......");
+
 DEF(d_clock, 2,
     "...ooooo...",
     ".oo.....oo.",
@@ -272,6 +290,8 @@ static const sprite_def_t *const s_defs[SPR_COUNT] = {
     [SPR_CLOCK] = &d_clock,
     [SPR_CALENDAR] = &d_calendar,
     [SPR_REFRESH] = &d_refresh,
+    [SPR_SPARKLE_A] = &d_sparkle_a,
+    [SPR_SPARKLE_B] = &d_sparkle_b,
 };
 
 static lv_image_dsc_t s_imgs[SPR_COUNT];

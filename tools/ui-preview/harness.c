@@ -75,7 +75,7 @@ int main(void)
     set(&m->sessions[2], "d3", "WRITE TESTS", "Running npm test", CARD_WORKING, ANIM_TERMINAL);
     set(&m->sessions[3], "d4", "PLAN FEATURE", "Planning...", CARD_WORKING, ANIM_PLAN);
     set(&m->sessions[4], "d5", "RESEARCH", "Researching...", CARD_WORKING, ANIM_BOOK);
-    set(&m->sessions[5], "d6", "IDLE", "Waiting...", CARD_IDLE, ANIM_SLEEP);
+    set(&m->sessions[5], "d6", "SHIP IT", "Done", CARD_DONE, ANIM_DONE);
     set(&m->sessions[6], "d7", "ESP-AI-PANEL", "Thinking...", CARD_WORKING, ANIM_THINKING);
     set(&m->sessions[7], "d8", "A-REALLY-LONG-PROJECT", "Error", CARD_ERROR, ANIM_ERROR);
     m->n_sessions = 8;
@@ -87,6 +87,8 @@ int main(void)
     m->version++;
     run(400);
     dump("1_page1.bmp");
+    run(150); dump("1b_done_anim.bmp");
+    run(300); dump("1c_done_anim.bmp");
 
     // swipe-equivalent: tap next
     lv_obj_t *scr = lv_screen_active();

@@ -23,6 +23,8 @@ typedef enum {
     SPR_CLOCK,
     SPR_CALENDAR,
     SPR_REFRESH,
+    SPR_SPARKLE_A,     // 4-point twinkle (big)
+    SPR_SPARKLE_B,     // twinkle (small)
     SPR_COUNT
 } sprite_id_t;
 
