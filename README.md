@@ -4,7 +4,7 @@ A desk display that shows what each of your Claude Code sessions is doing. It ru
 **Guition ESP32-S3-4848S040** (480×480 touch panel) connected over **USB only**, with no WiFi
 and no Bluetooth.
 
-![AI Panel showing six Claude Code sessions and usage](docs/screenshot.png)
+![AI Panel showing six Claude Code sessions and usage](docs/screenshot.gif)
 
 ```
 Claude Code ──hooks──────▶ ~/.ai-panel/hook.sh ──┐
@@ -34,7 +34,7 @@ Claude Code ──hooks──────▶ ~/.ai-panel/hook.sh ──┐
 | `firmware/` | ESP-IDF project (LCD/touch drivers, serial link, LVGL UI, pixel sprites/fonts) |
 | `companion/` | Node/TypeScript CLI `ai-panel` (daemon, hooks, statusLine, installer, demo) |
 | `protocol/PROTOCOL.md` | Wire protocol between host and panel |
-| `tools/ui-preview/` | Render the firmware UI on the Mac without the board (`build.sh` → PNGs) |
+| `tools/ui-preview/` | Render the firmware UI on the Mac without the board (`build.sh` → PNGs, `build.sh gif` → GIF) |
 | `CLAUDE.md` | Notes for AI assistants: hardware quirks, workflows, style rules |
 
 ## 1. Flash the firmware

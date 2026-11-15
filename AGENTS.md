@@ -25,6 +25,7 @@ idf.py reconfigure                # REQUIRED after adding/removing .c files (fon
 
 # UI without hardware: compiles firmware/main/ui/* against desktop LVGL → PNG screenshots
 tools/ui-preview/build.sh         # writes tools/ui-preview/out/*.png; Read them to check layout
+tools/ui-preview/build.sh gif     # out/panel.gif (8 s animated page 1; README uses docs/screenshot.gif)
 ```
 
 Only one process can hold the serial port at a time (`demo`, `daemon`, `idf.py monitor`, `flash`).

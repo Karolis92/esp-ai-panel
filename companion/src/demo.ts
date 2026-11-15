@@ -6,19 +6,19 @@ import { SerialLink } from "./serial.js";
 export function demoState(step: number): StateMsg {
   const now = Math.floor(Date.now() / 1000);
   const page1: WireSession[] = [
-    { id: "d1", title: "REFACTOR", activity: "Editing auth.ts", state: "working", anim: "laptop" },
-    { id: "d2", title: "REVIEW PR", activity: "Needs you", state: "needs", anim: "alert" },
-    { id: "d3", title: "WRITE TESTS", activity: "Running npm test", state: "working", anim: "terminal" },
-    { id: "d4", title: "PLAN FEATURE", activity: "Planning…", state: "working", anim: "plan" },
-    { id: "d5", title: "RESEARCH", activity: "Researching…", state: "working", anim: "book" },
-    { id: "d6", title: "IDLE", activity: "Waiting…", state: "idle", anim: "sleep" },
+    { id: "d1", title: "API-SERVER", activity: "Editing auth.ts", state: "working", anim: "laptop" },
+    { id: "d2", title: "WEB-APP", activity: "Needs you", state: "needs", anim: "alert" },
+    { id: "d3", title: "CLI-TOOLS", activity: "Running npm test", state: "working", anim: "terminal" },
+    { id: "d4", title: "MOBILE-APP", activity: "Planning…", state: "working", anim: "plan" },
+    { id: "d5", title: "BACKEND", activity: "Researching…", state: "working", anim: "book" },
+    { id: "d6", title: "BLOG", activity: "Done", state: "done", anim: "done" },
   ];
   const extra: WireSession[] = [
     { id: "d7", title: "ESP-AI-PANEL", activity: "Done", state: "done", anim: "done" },
     { id: "d8", title: "BILLING-API", activity: "Error", state: "error", anim: "error" },
     { id: "d9", title: "DOCS", activity: "Thinking…", state: "working", anim: "thinking" },
     { id: "d10", title: "INFRA", activity: "Running terraform apply", state: "working", anim: "coffee" },
-    { id: "d11", title: "MOBILE-APP", activity: "Waiting…", state: "idle", anim: "sleep" },
+    { id: "d11", title: "SCRIPTS", activity: "Waiting…", state: "idle", anim: "sleep" },
     { id: "d12", title: "DATA-PIPE", activity: "Delegating…", state: "working", anim: "thinking" },
     { id: "d13", title: "WEBSITE", activity: "Waiting…", state: "idle", anim: "sleep" },
   ];

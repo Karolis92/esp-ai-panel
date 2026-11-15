@@ -1,12 +1,16 @@
 // Host-side UI preview: runs the firmware UI (ui/, link/model.c) on desktop LVGL with a
 // memory framebuffer and dumps screenshots. See build.sh. Edit the fake sessions below freely.
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
 
 #include "lvgl.h"
 #include "model.h"
 #include "ui.h"
+
+#define GIF_FRAME_MS 50
+#define GIF_FRAMES   (8000 / GIF_FRAME_MS)
 
 static int64_t s_fake_us;
 int64_t esp_timer_get_time(void) { return s_fake_us; }
@@ -70,21 +74,34 @@ int main(void)
     dump("0_waiting.bmp");
 
     model_t *m = model_get();
-    set(&m->sessions[0], "d2", "REVIEW PR", "Needs you", CARD_NEEDS, ANIM_ALERT);
-    set(&m->sessions[1], "d1", "REFACTOR", "Editing auth.ts", CARD_WORKING, ANIM_LAPTOP);
-    set(&m->sessions[2], "d3", "WRITE TESTS", "Running npm test", CARD_WORKING, ANIM_TERMINAL);
-    set(&m->sessions[3], "d4", "PLAN FEATURE", "Planning...", CARD_WORKING, ANIM_PLAN);
-    set(&m->sessions[4], "d5", "RESEARCH", "Researching...", CARD_WORKING, ANIM_BOOK);
-    set(&m->sessions[5], "d6", "SHIP IT", "Done", CARD_DONE, ANIM_DONE);
-    set(&m->sessions[6], "d7", "ESP-AI-PANEL", "Thinking...", CARD_WORKING, ANIM_THINKING);
+    set(&m->sessions[0], "d2", "WEB-APP", "Needs you", CARD_NEEDS, ANIM_ALERT);
+    set(&m->sessions[1], "d1", "API-SERVER", "Editing auth.ts", CARD_WORKING, ANIM_LAPTOP);
+    set(&m->sessions[2], "d3", "CLI-TOOLS", "Running npm test", CARD_WORKING, ANIM_TERMINAL);
+    set(&m->sessions[3], "d4", "MOBILE-APP", "Planning...", CARD_WORKING, ANIM_PLAN);
+    set(&m->sessions[4], "d5", "BACKEND", "Researching...", CARD_WORKING, ANIM_BOOK);
+    set(&m->sessions[5], "d6", "BLOG", "Done", CARD_DONE, ANIM_DONE);
+    set(&m->sessions[6], "d7", "ESP-AI-PANEL", "Done", CARD_DONE, ANIM_DONE);
     set(&m->sessions[7], "d8", "A-REALLY-LONG-PROJECT", "Error", CARD_ERROR, ANIM_ERROR);
     m->n_sessions = 8;
-    m->s5h = (usage_window_t){true, 45, 1000000 + 2 * 3600 + 15 * 60};
-    m->wk = (usage_window_t){true, 28, 1000000 + 5 * 86400 + 8 * 3600};
+    m->s5h = (usage_window_t){true, 45, 1000000 + 2 * 3600 + 15 * 60 + 30};
+    m->wk = (usage_window_t){true, 28, 1000000 + 5 * 86400 + 8 * 3600 + 30};
     m->host_now = 1000000;
     m->host_now_at_us = s_fake_us;
     m->last_rx_us = s_fake_us;
     m->version++;
+    if (getenv("PREVIEW_GIF")) {
+        // build.sh gif: record page 1 at 20 fps from the moment the sessions arrive (so the
+        // done card's party plays first); build.sh turns gif_*.bmp into out/panel.gif.
+        run(100); // let the UI's 100 ms refresh timer swap the waiting screen for the cards
+        for (int i = 0; i < GIF_FRAMES; i++) {
+            run(GIF_FRAME_MS);
+            m->last_rx_us = s_fake_us; // keep the "connected" indicator on
+            char name[32];
+            snprintf(name, sizeof name, "gif_%03d.bmp", i);
+            dump(name);
+        }
+        return 0;
+    }
     run(400);
     dump("1_page1.bmp");
     run(150); dump("1b_done_anim.bmp");
