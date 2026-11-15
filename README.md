@@ -46,17 +46,24 @@ Requires **ESP-IDF v5.3 or newer** (tested against the v5.4 APIs).
 mkdir -p ~/esp && cd ~/esp
 git clone --depth 1 --branch v5.4.2 --recursive --shallow-submodules https://github.com/espressif/esp-idf.git
 ./esp-idf/install.sh esp32s3
-. ~/esp/esp-idf/export.sh          # in every new shell
 
-cd firmware
-idf.py set-target esp32s3
-idf.py -p /dev/cu.usbserial-110 flash monitor   # Ctrl+] to exit monitor
+# build + flash (from the repo root)
+tools/flash.sh                     # asks which serial port to use
+tools/flash.sh monitor             # same, then shows the serial console (Ctrl+] to exit)
+PORT=/dev/cu.usbserial-XXXX tools/flash.sh # skip the port prompt
 ```
 
+`tools/flash.sh` loads the ESP-IDF environment (`~/esp/esp-idf/export.sh`, or `$IDF_EXPORT`) if it isn't
+already active, then runs `idf.py flash` in `firmware/`. Any extra arguments go to `idf.py`.
+Only one program can open the serial port at a time, so the script stops the `ai-panel` daemon and
+`ai-panel demo` before flashing and restarts the daemon when it exits.
+
 The board's USB-C port goes through a CH340 USB-UART bridge (VID `1a86`), which is wired to UART0.
-On macOS it appears as `/dev/cu.usbserial-*`. The firmware console shares that port at 115200 baud,
-and the daemon ignores any non-JSON lines. **Close `idf.py monitor` before running the daemon**,
-because only one program can open the port at a time.
+On macOS it appears as `/dev/cu.usbserial-*`; the number depends on the USB socket. The firmware
+console shares that port at 115200 baud, and the daemon ignores any non-JSON lines.
+
+To run `idf.py` directly (e.g. `menuconfig`, `reconfigure`), first run `. ~/esp/esp-idf/export.sh` in
+that shell, and stop the daemon yourself if you need the port.
 
 After flashing, the panel shows **WAITING FOR HOST** until the daemon connects.
 
@@ -93,8 +100,13 @@ they restart.
 Optional `~/.ai-panel/config.json`:
 
 ```json
-{ "port": "/dev/cu.usbserial-110", "baud": 115200 }
+{ "port": "/dev/cu.usbserial-XXXX", "baud": 115200 }
 ```
+
+Both fields are optional. Without `"port"`, the daemon tries each USB serial device with a CH340
+(`1a86`), Espressif (`303a`) or CP210x (`10c4`) vendor ID. It sends only a `ping` and uses the first
+one that answers with the panel's `hello`. A device that doesn't answer within 4 s is closed again
+and left alone for a minute. That way, other boards, like an Arduino, never get session data.
 
 ## How session state is derived
 
@@ -123,7 +135,9 @@ always shows immediately. The logic is in `companion/src/sessions.ts` and is cov
 * **Touch doesn't respond**: the log prints `GT911 not found`. The firmware tries I2C addresses
   0x5D and 0x14.
 * **`ai-panel status` says the panel is not connected**: another program has the port open
-  (`idf.py monitor`, `ai-panel demo`), or the port is not a CH340. Set `"port"` in the config.
+  (`tools/flash.sh monitor`, `idf.py monitor`, `ai-panel demo`), or the panel isn't answering `ping`
+  (old firmware or a crash). Run `ai-panel daemon -v` (with the launchd agent stopped) to see
+  `probing …` / `no hello` lines for each port.
 * **Usage tiles show "—"**: no statusLine update has arrived yet, or your plan doesn't report rate
   limits.
 

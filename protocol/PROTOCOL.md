@@ -4,6 +4,10 @@ Transport: USB serial (CH340 → ESP32-S3 UART0), **115200 baud, 8N1**.
 Framing: newline-delimited JSON (`\n`), one object per line, max **4096 bytes** per line.
 Every message has a `"t"` (type) field. Unknown types/fields are ignored.
 
+**Handshake:** after opening a port, the host only sends `ping` (once a second) until the device
+replies with `hello`. If no `hello` arrives within 4 s, the host closes the port and tries the next
+candidate, so other USB-serial devices never receive session data. `state` is sent only after `hello`.
+
 ## Host → device
 
 ### `state` — full snapshot (sent on every change, debounced ~100 ms, and on `hello`)

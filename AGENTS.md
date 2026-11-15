@@ -19,7 +19,8 @@ node dist/cli.js daemon -v        # real daemon, verbose
 
 # firmware (every new shell needs the IDF env first)
 . ~/esp/esp-idf/export.sh
-cd firmware && idf.py -p /dev/cu.usbserial-110 flash      # build + flash
+tools/flash.sh                    # build + flash; pauses the daemon/demo, asks which port
+tools/flash.sh monitor            # same, then serial monitor (daemon restarts after Ctrl+])
 idf.py reconfigure                # REQUIRED after adding/removing .c files (fonts are GLOBbed)
 
 # UI without hardware: compiles firmware/main/ui/* against desktop LVGL → PNG screenshots
@@ -27,7 +28,8 @@ tools/ui-preview/build.sh         # writes tools/ui-preview/out/*.png; Read them
 ```
 
 Only one process can hold the serial port at a time (`demo`, `daemon`, `idf.py monitor`, `flash`).
-Stop the others before flashing (`pkill -f "dist/cli.js demo"`).
+`tools/flash.sh` handles this: it unloads the `gg.ai-panel` launchd agent (KeepAlive would re-grab
+the port), kills `demo`, flashes, then reloads the agent. With raw `idf.py`, stop them yourself.
 
 ## Workflow for UI changes
 
